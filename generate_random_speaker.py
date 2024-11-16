@@ -147,8 +147,8 @@ for num, random_speaker in enumerate(identity):
         meta["TTS Prompt"] = prompt
         meta_data.append(meta)
 
-        sf.write("Specific_Speaker/" + str(actual_id.replace(":", "")) +".wav", audio_arr, model.config.sampling_rate)
-        f = open("Specific_Speaker/" + str(actual_id.replace(":", "")) + ".txt", "a")
+        sf.write("Random_Speaker/" + str(actual_id.replace(":", "")) +".wav", audio_arr, model.config.sampling_rate)
+        f = open("Random_Speaker/" + str(actual_id.replace(":", "")) + ".txt", "a")
         f.write(prompt)
         f.close()
         
