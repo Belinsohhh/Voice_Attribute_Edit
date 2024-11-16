@@ -132,8 +132,6 @@ for idx,speak in enumerate(speakers):
         f = open("Specific_Speaker/" + str(actual_id.replace(":", "")) + ".txt", "a")
         f.write(prompt)
         f.close()
-        break
-    break
 
 with open('generated_meta_info.json', 'w') as f:
     json.dump(meta_data, f, indent=4)

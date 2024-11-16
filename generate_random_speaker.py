@@ -130,6 +130,8 @@ for num, random_speaker in enumerate(identity):
         random_modulation = random.choice(modulation)
         random_rate = random.choice(rate)
         prompt = random.choice(transcripts)
+        index = transcripts.index(prompt)
+        actual_id = str(id[index])
         description = f"A {random_gender} voice in a {random_accent} accent reads a book {random_rate} with a {random_pitch} {random_modulation} voice. {random_environment}"
 
         input_ids = tokenizer(description, return_tensors="pt").input_ids.to(device)
@@ -145,7 +147,10 @@ for num, random_speaker in enumerate(identity):
         meta["TTS Prompt"] = prompt
         meta_data.append(meta)
 
-        sf.write(title+".wav", audio_arr, model.config.sampling_rate)
-        f = open(title + ".txt", "a")
+        sf.write("Specific_Speaker/" + str(actual_id.replace(":", "")) +".wav", audio_arr, model.config.sampling_rate)
+        f = open("Specific_Speaker/" + str(actual_id.replace(":", "")) + ".txt", "a")
         f.write(prompt)
         f.close()
+        
+with open('generated_meta_info.json', 'w') as f:
+    json.dump(meta_data, f, indent=4)
