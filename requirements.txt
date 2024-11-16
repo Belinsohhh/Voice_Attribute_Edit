@@ -2,9 +2,9 @@
 
 openai==1.2.0
 pandas==2.2.3
-parler_tts @ git+https://github.com/huggingface/parler-tts.git@650288aae1315bdb852d65b0fa41b6504948e22d
 soundfile==0.12.1
-torch==2.5.1
-transformers==4.46.1
+torch==2.4.1
+parler_tts @ git+https://github.com/huggingface/parler-tts.git@dcaed95e1cce6f616e3e1956f8d63f0f3f5dfe5f
+transformers==4.43.3
 pyarrow==18.0.0
 tiktoken==0.8.0

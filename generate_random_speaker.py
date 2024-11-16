@@ -8,13 +8,18 @@ import torch
 from parler_tts import ParlerTTSForConditionalGeneration
 from transformers import AutoTokenizer
 import soundfile as sf
+import json
+import itertools
 
-#transcript
-my_file = open("ner_replaced_transcripts.txt", "r") 
-data = my_file.read() 
-data = data.replace('â€‹', '')
-transcripts = data.split("\n") 
-my_file.close() 
+#transcript and og file id
+with open('ner_replaced_transcripts.json', 'r') as file:
+    data = json.load(file)
+
+transcripts = []
+id = []
+for each in data:
+    transcripts.append(each.get("Replaced Sentence"))
+    id.append(each.get("id"))
 
 #gender
 my_file = open("attributes/gender.txt", "r") 
@@ -72,6 +77,15 @@ data = data.replace('â€‹', '')
 recording = data.split("\n") 
 my_file.close() 
 
+def cross_combinations(list1, list2):
+    listing = list(itertools.product(list1, list2))
+    new_list = []
+    for i in listing:
+        new_list.append(list(i))
+    return new_list
+
+identity = cross_combinations(cross_combinations(gender, accents), pitch)
+
 def generate_random_env(channel, distance, recording):
     if channel!="" and distance !="" and recording !="":
         random_val = random.choice([1,0])
@@ -102,11 +116,13 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 model = ParlerTTSForConditionalGeneration.from_pretrained("parler-tts/parler-tts-large-v1").to(device)
 tokenizer = AutoTokenizer.from_pretrained("parler-tts/parler-tts-large-v1")
 
-for num in range(156):
-    random_gender = random.choice(gender)
-    random_accent = random.choice(accents)
-    random_pitch = random.choice(pitch)
+meta_data = []
+for num, random_speaker in enumerate(identity):
+    random_gender = random_speaker[0][0]
+    random_accent = random_speaker[0][1]
+    random_pitch = random_speaker[1]
     for i in range(10):
+        meta = {}
         random_channel = random.choice(channel)
         random_distance = random.choice(distance)
         random_recording = random.choice(recording)
@@ -122,6 +138,13 @@ for num in range(156):
         generation = model.generate(input_ids=input_ids, prompt_input_ids=prompt_input_ids)
         audio_arr = generation.cpu().numpy().squeeze()
         title = f"Random_Speaker/{num}-{random_gender}-{random_accent}-{random_rate}-{random_pitch}-{random_modulation}-{random_distance}-{random_channel}-{random_recording}"
+
+        meta["id"] = actual_id
+        meta["Description Summary"] = title
+        meta["TTS Description"] = description
+        meta["TTS Prompt"] = prompt
+        meta_data.append(meta)
+
         sf.write(title+".wav", audio_arr, model.config.sampling_rate)
         f = open(title + ".txt", "a")
         f.write(prompt)

@@ -128,8 +128,8 @@ for idx,speak in enumerate(speakers):
         meta["TTS Prompt"] = prompt
         meta_data.append(meta)
 
-        sf.write(actual_id+".wav", audio_arr, model.config.sampling_rate)
-        f = open("Specific_Speaker/" + actual_id + ".txt", "a")
+        sf.write("Specific_Speaker/" + str(actual_id.replace(":", "")) +".wav", audio_arr, model.config.sampling_rate)
+        f = open("Specific_Speaker/" + str(actual_id.replace(":", "")) + ".txt", "a")
         f.write(prompt)
         f.close()
         break
