@@ -133,6 +133,6 @@ for idx,speak in enumerate(speakers):
         f.write(prompt)
         f.close()
 
-with open('generated_meta_info.json', 'w') as f:
+with open('generated_meta_info_specific_speaker.json', 'w') as f:
     json.dump(meta_data, f, indent=4)
 
