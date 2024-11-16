@@ -121,7 +121,7 @@ for num in range(156):
 
         generation = model.generate(input_ids=input_ids, prompt_input_ids=prompt_input_ids)
         audio_arr = generation.cpu().numpy().squeeze()
-        title = f"random_speaker/{num}-{random_gender}-{random_accent}-{random_rate}-{random_pitch}-{random_modulation}-{random_distance}-{random_channel}-{random_recording}"
+        title = f"Random_Speaker/{num}-{random_gender}-{random_accent}-{random_rate}-{random_pitch}-{random_modulation}-{random_distance}-{random_channel}-{random_recording}"
         sf.write(title+".wav", audio_arr, model.config.sampling_rate)
         f = open(title + ".txt", "a")
         f.write(prompt)

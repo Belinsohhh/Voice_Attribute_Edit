@@ -8,13 +8,17 @@ import torch
 from parler_tts import ParlerTTSForConditionalGeneration
 from transformers import AutoTokenizer
 import soundfile as sf
+import json
 
-#transcript
-my_file = open("ner_replaced_transcripts.txt", "r") 
-data = my_file.read() 
-data = data.replace('â€‹', '')
-transcripts = data.split("\n") 
-my_file.close() 
+#transcript and og file id
+with open('ner_replaced_transcripts.json', 'r') as file:
+    data = json.load(file)
+
+transcripts = []
+id = []
+for each in data:
+    transcripts.append(each.get("Replaced Sentence"))
+    id.append(each.get("id"))
 
 #speaker
 my_file = open("attributes/speakers.txt", "r") 
@@ -95,8 +99,10 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 model = ParlerTTSForConditionalGeneration.from_pretrained("parler-tts/parler-tts-large-v1").to(device)
 tokenizer = AutoTokenizer.from_pretrained("parler-tts/parler-tts-large-v1")
 
+meta_data = []
 for idx,speak in enumerate(speakers):
     for i in range(10):
+        meta = {}
         random_pitch = random.choice(pitch)
         random_channel = random.choice(channel)
         random_distance = random.choice(distance)
@@ -105,6 +111,8 @@ for idx,speak in enumerate(speakers):
         random_modulation = random.choice(modulation)
         random_rate = random.choice(rate)
         prompt = random.choice(transcripts)
+        index = transcripts.index(prompt)
+        actual_id = str(id[index])
         description = f"{speak} reads a book with a {random_pitch} {random_modulation} voice {random_rate}. {random_environment}"
 
         input_ids = tokenizer(description, return_tensors="pt").input_ids.to(device)
@@ -112,8 +120,21 @@ for idx,speak in enumerate(speakers):
 
         generation = model.generate(input_ids=input_ids, prompt_input_ids=prompt_input_ids)
         audio_arr = generation.cpu().numpy().squeeze()
-        title = f"specific_speaker/{speak}-{i}-{random_rate}-{random_pitch}-{random_modulation}-{random_distance}-{random_channel}-{random_recording}"
-        sf.write(title+".wav", audio_arr, model.config.sampling_rate)
-        f = open(title + ".txt", "a")
+        
+        title = f"{speak}-{i}-{random_rate}-{random_pitch}-{random_modulation}-{random_distance}-{random_channel}-{random_recording}"
+        meta["id"] = actual_id
+        meta["Description Summary"] = title
+        meta["TTS Description"] = description
+        meta["TTS Prompt"] = prompt
+        meta_data.append(meta)
+
+        sf.write(actual_id+".wav", audio_arr, model.config.sampling_rate)
+        f = open("Specific_Speaker/" + actual_id + ".txt", "a")
         f.write(prompt)
         f.close()
+        break
+    break
+
+with open('generated_meta_info.json', 'w') as f:
+    json.dump(meta_data, f, indent=4)
+
