@@ -133,24 +133,55 @@ for num, random_speaker in enumerate(identity):
         index = transcripts.index(prompt)
         actual_id = str(id[index])
         description = f"A {random_gender} voice in a {random_accent} accent reads a book {random_rate} with a {random_pitch} {random_modulation} voice. {random_environment}"
+        try:
+            input_ids = tokenizer(description, return_tensors="pt").input_ids.to(device)
+            prompt_input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(device)
 
-        input_ids = tokenizer(description, return_tensors="pt").input_ids.to(device)
-        prompt_input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(device)
+            generation = model.generate(input_ids=input_ids, prompt_input_ids=prompt_input_ids)
+            audio_arr = generation.cpu().numpy().squeeze()
+            title = f"Random_Speaker/{num}-{random_gender}-{random_accent}-{random_rate}-{random_pitch}-{random_modulation}-{random_distance}-{random_channel}-{random_recording}"
 
-        generation = model.generate(input_ids=input_ids, prompt_input_ids=prompt_input_ids)
-        audio_arr = generation.cpu().numpy().squeeze()
-        title = f"Random_Speaker/{num}-{random_gender}-{random_accent}-{random_rate}-{random_pitch}-{random_modulation}-{random_distance}-{random_channel}-{random_recording}"
+            meta["id"] = actual_id
+            meta["Description Summary"] = title
+            meta["TTS Description"] = description
+            meta["TTS Prompt"] = prompt
+            meta_data.append(meta)
 
-        meta["id"] = actual_id
-        meta["Description Summary"] = title
-        meta["TTS Description"] = description
-        meta["TTS Prompt"] = prompt
-        meta_data.append(meta)
+            sf.write("Random_Speaker/" + str(actual_id.replace(":", "")) +".wav", audio_arr, model.config.sampling_rate)
+            f = open("Random_Speaker/" + str(actual_id.replace(":", "")) + ".txt", "a")
+            f.write(prompt)
+            f.close()
+        except:
+            random_channel = random.choice(channel)
+            random_distance = random.choice(distance)
+            random_recording = random.choice(recording)
+            random_environment = generate_random_env(random_channel, random_distance, random_recording)
+            random_modulation = random.choice(modulation)
+            random_rate = random.choice(rate)
+            prompt = random.choice(transcripts)
+            index = transcripts.index(prompt)
+            actual_id = str(id[index])
+            description = f"A {random_gender} voice in a {random_accent} accent reads a book {random_rate} with a {random_pitch} {random_modulation} voice. {random_environment}"
 
-        sf.write("Random_Speaker/" + str(actual_id.replace(":", "")) +".wav", audio_arr, model.config.sampling_rate)
-        f = open("Random_Speaker/" + str(actual_id.replace(":", "")) + ".txt", "a")
-        f.write(prompt)
-        f.close()
-        
-with open('generated_meta_info_random_speaker.json', 'w') as f:
+            input_ids = tokenizer(description, return_tensors="pt").input_ids.to(device)
+            prompt_input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(device)
+
+            generation = model.generate(input_ids=input_ids, prompt_input_ids=prompt_input_ids)
+            audio_arr = generation.cpu().numpy().squeeze()
+            title = f"Random_Speaker/{num}-{random_gender}-{random_accent}-{random_rate}-{random_pitch}-{random_modulation}-{random_distance}-{random_channel}-{random_recording}"
+
+            meta["id"] = actual_id
+            meta["Description Summary"] = title
+            meta["TTS Description"] = description
+            meta["TTS Prompt"] = prompt
+            meta_data.append(meta)
+
+            sf.write("Random_Speaker/" + str(actual_id.replace(":", "")) +".wav", audio_arr, model.config.sampling_rate)
+            f = open("Random_Speaker/" + str(actual_id.replace(":", "")) + ".txt", "a")
+            f.write(prompt)
+            f.close()
+        with open('Random_Speaker/generated_meta_info_random_speaker.json', 'a') as f:
+            json.dump(meta, f, indent=4)
+
+with open('Random_Speaker/full_generated_meta_info_random_speaker.json', 'w') as f:
     json.dump(meta_data, f, indent=4)
