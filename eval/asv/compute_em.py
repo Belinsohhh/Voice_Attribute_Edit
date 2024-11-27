@@ -227,3 +227,22 @@ oa = np.load('%s/oa.npy'%out)
 
 eer, threshold = compute_eer(oa, neg)
 print("%f%"%eer*100)
+
+far = compute_far(oa, threshold)
+print('False acceptance rate: {:.2f}'.format(far * 100))
+
+
+# Show far value on the plot
+plt.text(0.05, 0.95, f'FAR: {far*100:.2f}%', ha='left', va='top', transform=plt.gca().transAxes,
+         fontsize=20, bbox=dict(facecolor='none', edgecolor='none', alpha=0.0))
+
+plt.hist(pos, color='r', density=True, alpha=0.3);
+plt.hist(neg, color='b', density=True, alpha=0.3);
+plt.hist(oa, color='y', density=True, alpha=0.3);
+plt.plot([threshold, threshold], [0, 0.5], color='k');
+# Set x and y axis ranges
+plt.xlim([-0.2, 1])
+plt.ylim([0, 5])
+base = out.split('/')[-1]
+plt.savefig('%s/%s.png'%(out,base))
+
