@@ -1,16 +1,27 @@
 from openai import OpenAI
 import pandas as pd
 import json
+import tiktoken
 
-file = input("Enter parquet file name:")
+encoding = tiktoken.encoding_for_model("gpt-4o-mini")
 
-client = OpenAI(api_key= "api key")
+client = OpenAI(api_key="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")
 GPT_MODEL = "gpt-4o-mini"
 
-data = pd.read_parquet('voxpopuli/voxpopuli/' + file, engine='pyarrow')
+data = pd.read_parquet('voxpopuli/voxpopuli/test-00000-of-00001.parquet', engine='pyarrow')
 
 normalized_text = data["normalized_text"]
 normalized_combined_ner = data["normalized_combined_ner"]
+
+data_2 = pd.read_parquet('voxpopuli/voxpopuli/train-00000-of-00001.parquet', engine='pyarrow')
+normalized_text_2 = data_2["normalized_text"]
+normalized_combined_ner_2 = data_2["normalized_combined_ner"]
+
+for i in normalized_text_2:
+    normalized_text.append(i)
+
+for i in normalized_combined_ner_2:
+    normalized_combined_ner.append(i)
 
 function_metrics_gpt = [
 {
@@ -38,12 +49,12 @@ function_metrics_gpt = [
                         "NER Instructions": 
                         {
                             "type": "string",
-                            "description": "ner instructions given by user "
+                            "description": "insert NER instructions given by user, do not make changes from user's instructions."
                         },
                         "Replaced Sentence": 
                         {
                             "type": "string",
-                            "description": "This is the sentence that has its ner words all replaced."
+                            "description": "Final sentence after all ner words have been replaced"
                         },
                     }
                 }
@@ -52,38 +63,38 @@ function_metrics_gpt = [
     }
 }]
 
-def replace_ner_gpt_edited(query: str, ner:str, model: str = GPT_MODEL,) -> str:
+def replace_ner_gpt(query: str, model: str = GPT_MODEL,) -> str:
     messages = [
-        {"role": "system", "content": '''You are a Named Entity Recognition (NER) expert. You will replace the sensitive NER words in the sentence provided by user with a completely dissimilar replacement and output the original sentence, ner instructions and replaced sentence in json format like the following examples in delimitered by XML tags:
+        {"role": "system", "content": '''You are a Named Entity Recognition (NER) expert. If an NER instruction is given, you will replace the sensitive NER words in each of the sentences provided by user with a completely dissimilar replacement based on the ner instructions given. Output the original sentence, ner instructions and the replaced sentence in json format exactly like the following examples in delimitered by XML tags:
         <output>
-        Example 1:
+         Example 1:
         {
             "Original Sentence": "secondly conclusions from the commission communication entitled towards world class clusters in the european union implementing the broad based innovation strategy",
             "NER Instructions": "Replace the 'PLACE' type word, starting from character 100 to character 113, with a dissimilar word. Replace the 'QUANT' type word, starting from character 0 to character 7, with a dissimilar word.",
-            "Replaced Sentence": "Next, conclusions from the commission communication entitled towards world-class clusters across the continent implementing the comprehensive innovation strategy." 
+            "Replaced Sentence": "Next, conclusions from the commission communication entitled towards world-class clusters across the continent implementing the comprehensive innovation strategy." ,
         }
          
         Example 2:
         {
             "Original Sentence": "along with eighty four other meps i have tabled a plenary amendment which i really hope you can all support.",
             "NER Instructions": "Replace the 'QUANT' type word, starting from character 11 to character 21, with a dissimilar word.",
-            "Replaced Sentence": "Along with a substantial group of other MEPs, I have tabled a plenary amendment which I really hope you can all support."
+            "Replaced Sentence": "Along with a substantial group of other MEPs, I have tabled a plenary amendment which I really hope you can all support.",
         }
         
          Example 3:
         {
             "Original Sentence": "in this situation we have to see reflection political responsibility and more political dialogue.",
             "NER Instructions": "",
-            "Replaced Sentence": "in this situation we have to see reflection political responsibility and more political dialogue."
+            "Replaced Sentence": "in this situation we have to see reflection political responsibility and more political dialogue.",
         }
         
         Derive the answer step by step:
         1. Obtain the sentence from user
-        2. Replace each word in the original sentence, as specified by the users NER instructions, with a dissimilar word. If no NER instructions is given, DO NOT do any replacements.
-        4. Input original sentence, NER instructions and replaced sentence into the json format required. 
+        2. Replace each word in the original sentence, as specified by the users NER instructions, with a dissimilar word. 
+        3. Input original sentence, NER instructions and replaced sentence into the json format required. 
 
         Take a deep breath and think carefully, then only reply with the final json format without the intermediate steps.'''},
-        {"role": "user", "content": "give me a replaced sentence based on the original sentence: " + query + ", and NER instructions:" + ner},
+        {"role": "user", "content": query},
     ]
 
     response = client.chat.completions.create(
@@ -99,19 +110,38 @@ def replace_ner_gpt_edited(query: str, ner:str, model: str = GPT_MODEL,) -> str:
     json_obj = json.loads(argument)
     return json_obj["Sentence"]
 
-replaced_output = []
+replaced_output_v2 = []
+token_budget = 10000
+curr_token_len = 0
+multiple_sentence = ""
 for idx, each_text in enumerate(normalized_text):
+    ner_command = str(normalized_combined_ner[idx])
     ner_type_list = normalized_combined_ner[idx].get("type")
     ner_start_list = normalized_combined_ner[idx].get("start")
     ner_length_list = normalized_combined_ner[idx].get("length")
-    replace_command = ""
+    replace_command = f"Give me a replaced sentence based on the Original Sentence: '{each_text}', and NER Instructions:"
     if len(ner_type_list) != 0:
         for itr, each_replace in enumerate(ner_type_list):
             start = ner_start_list[itr]
             end = ner_start_list[itr] + ner_length_list[itr] - 1
-            replace_command += f'Replace the {each_replace} ner type word, starting from character {start} to character {end}, with a dissimilar word. '
-        output = replace_ner_gpt_edited(each_text, replace_command)
-        replaced_output.append(output[0])
+            replace_command += f"'Replace the {each_replace} ner type word, starting from character {start} to character {end}, with a dissimilar word."
+        tokens = encoding.encode(replace_command)
+        token_count = len(tokens)
+        if (curr_token_len + token_count) < token_budget and idx != (len(normalized_text)-1):
+            multiple_sentence += replace_command
+            curr_token_len += token_count
+        else:
+            output =replace_ner_gpt(multiple_sentence)
+            output = list(output)
+            for i in output:
+                replaced_output_v2.append(i)
+            curr_token_len = token_count
+            multiple_sentence = replace_command
+    else:
+        no_replace = {"Original Sentence": each_text, 
+                    "NER Instructions": "", 
+                    "Replaced Sentence": each_text}
+        replaced_output_v2.append(no_replace)
 
-with open('ner_output.json', 'w') as f:
-    json.dump(replaced_output, f, indent=4)
+with open('test.json', 'w') as f:
+    json.dump(replaced_output_v2, f, indent=4)

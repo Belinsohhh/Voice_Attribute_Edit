@@ -226,7 +226,7 @@ neg = np.load('%s/neg.npy'%out)
 oa = np.load('%s/oa.npy'%out)
 
 eer, threshold = compute_eer(oa, neg)
-print("%f%"%eer*100)
+print(f"{eer*100}%")
 
 far = compute_far(oa, threshold)
 print('False acceptance rate: {:.2f}'.format(far * 100))

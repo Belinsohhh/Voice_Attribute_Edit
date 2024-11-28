@@ -11,14 +11,15 @@ import soundfile as sf
 import json
 
 #transcript and og file id
-with open('ner_replaced_transcripts.json', 'r') as file:
-    data = json.load(file)
+with open('ner_transcripts_new.json', 'r') as file:
+    transcript_data = json.load(file)
 
-transcripts = []
-id = []
-for each in data:
-    transcripts.append(each.get("Replaced Sentence"))
-    id.append(each.get("id"))
+#speaker
+my_file = open("voxpopuli_speaker.txt", "r") 
+data = my_file.read() 
+data = data.replace('â€‹', '')
+vox_speakers = data.split("\n") 
+my_file.close()
 
 #speaker
 my_file = open("attributes/speakers.txt", "r") 
@@ -101,7 +102,8 @@ tokenizer = AutoTokenizer.from_pretrained("parler-tts/parler-tts-large-v1")
 
 meta_data = []
 for idx,speak in enumerate(speakers):
-    for i in range(10):
+    random_speaker = random.choice(vox_speakers)
+    for i in range(0, 10):
         meta = {}
         random_pitch = random.choice(pitch)
         random_channel = random.choice(channel)
@@ -110,9 +112,17 @@ for idx,speak in enumerate(speakers):
         random_environment = generate_random_env(random_channel, random_distance, random_recording)
         random_modulation = random.choice(modulation)
         random_rate = random.choice(rate)
+        transcripts = []
+        ids = []
+        for each in transcript_data:
+            if each.get("Speaker") == random_speaker:
+                transcripts.append(each.get("Replaced Sentence"))
+                ids.append(each.get("id"))
         prompt = random.choice(transcripts)
         index = transcripts.index(prompt)
-        actual_id = str(id[index])
+        actual_id = str(ids[index])
+        transcript_index = next((idx for (idx, d) in enumerate(transcript_data) if d["id"] == actual_id), None)
+        json_transcript = transcript_data[transcript_index]
         description = f"{speak} reads a book with a {random_pitch} {random_modulation} voice {random_rate}. {random_environment}"
         try: 
             input_ids = tokenizer(description, return_tensors="pt").input_ids.to(device)
@@ -126,7 +136,7 @@ for idx,speak in enumerate(speakers):
             meta["Description Summary"] = title
             meta["TTS Description"] = description
             meta["TTS Prompt"] = prompt
-            meta_data.append(meta)
+            meta["Speaker"] = random_speaker
 
             sf.write("Specific_Speaker/" + str(actual_id.replace(":", "")) +".wav", audio_arr, model.config.sampling_rate)
             f = open("Specific_Speaker/" + str(actual_id.replace(":", "")) + ".txt", "a")
@@ -140,9 +150,17 @@ for idx,speak in enumerate(speakers):
             random_environment = generate_random_env(random_channel, random_distance, random_recording)
             random_modulation = random.choice(modulation)
             random_rate = random.choice(rate)
+            transcripts = []
+            ids = []
+            for each in transcript_data:
+                if each.get("Speaker") == random_speaker:
+                    transcripts.append(each.get("Replaced Sentence"))
+                    ids.append(each.get("id"))
             prompt = random.choice(transcripts)
             index = transcripts.index(prompt)
-            actual_id = str(id[index])
+            actual_id = str(ids[index])
+            transcript_index = next((idx for (idx, d) in enumerate(transcript_data) if d["id"] == actual_id), None)
+            json_transcript = transcript_data[transcript_index]
             description = f"{speak} reads a book with a {random_pitch} {random_modulation} voice {random_rate}. {random_environment}"
             input_ids = tokenizer(description, return_tensors="pt").input_ids.to(device)
             prompt_input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(device)
@@ -155,15 +173,20 @@ for idx,speak in enumerate(speakers):
             meta["Description Summary"] = title
             meta["TTS Description"] = description
             meta["TTS Prompt"] = prompt
-            meta_data.append(meta)
+            meta["Speaker"] = random_speaker
 
             sf.write("Specific_Speaker/" + str(actual_id.replace(":", "")) +".wav", audio_arr, model.config.sampling_rate)
             f = open("Specific_Speaker/" + str(actual_id.replace(":", "")) + ".txt", "a")
             f.write(prompt)
             f.close()
-        with open('Specific_Speaker/generated_meta_info_random_speaker.json', 'a') as f:
+        
+        meta_data.append(meta)
+        transcript_data.remove(json_transcript)
+
+        with open('Specific_Speaker/generated_meta_info_specific_speaker.json', 'a') as f:
             json.dump(meta, f, indent=4)
+            
+    vox_speakers.remove(random_speaker)
 
-with open('Specific_Speaker/full_generated_meta_info_random_speaker.json', 'w') as f:
+with open('Specific_Speaker/full_generated_meta_info_specific_speaker.json', 'w') as f:
     json.dump(meta_data, f, indent=4)
-

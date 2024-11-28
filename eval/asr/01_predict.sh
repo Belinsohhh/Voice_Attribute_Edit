@@ -13,7 +13,7 @@ if [ "$stage" -le 1 ]; then
     # Run prediction
     python main.py wav.lst "$outname"
 
-    json_file="/root/Voice_Attribute_Edit/ner_replaced_transcripts.json"
+    json_file="/root/Voice_Attribute_Edit/ner_replaced_new_edited.json"
 
     # Output file
     output_file="ori_key.txt"
@@ -22,7 +22,7 @@ if [ "$stage" -le 1 ]; then
     cat "$json_file" |
     grep -E '"id"|"Original Sentence"' | # Extract lines with "id" or "Original Sentence"
     sed -E 's/.*"id": "(.*)",/\1/;s/.*"Original Sentence": "(.*)"/\1/' | # Extract values
-    sed 's/://g' | # Replace ":" with an empty string in the id
+    # sed 's/://g' | # Replace ":" with an empty string in the id
     awk 'NR % 2 == 1 {id=$0; next} {print id, $0}' > "$output_file" # Combine "id" and "Original Sentence"
 
 
