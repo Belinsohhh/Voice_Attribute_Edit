@@ -25,3 +25,22 @@ in `eval/asv/run.sh`
 
 `bash eval/asv/run.sh`
 
+## eval MOS
+
+1. resample and norm the audios
+
+cd `mos/resample_norm` 
+
+`bash 00_run.sh`
+
+2. Predict MOS
+
+click `Releases->Assets`
+
+download `ckpt_w2vsmall` and copy to `mos/mos-finetune-ssl/pretrained`
+
+download `wav2vec_small.pt` and copy to `mos/mos-finetune-ssl/fairseq/`
+
+cd `mos/mos-finetune-ssl`
+
+bash run.sh
