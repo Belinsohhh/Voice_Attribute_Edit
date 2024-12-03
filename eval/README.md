@@ -27,9 +27,15 @@ in `eval/asv/run.sh`
 
 ## eval MOS
 
+### Step 1: Resample and Normalize the Audios
+
+cd mos/resample_norm
+
 1. resample and norm the audios
 
 cd `mos/resample_norm` 
+
+`bash install_sv56.sh`
 
 `bash 00_run.sh`
 
@@ -43,4 +49,9 @@ download `wav2vec_small.pt` and copy to `mos/mos-finetune-ssl/fairseq/`
 
 cd `mos/mos-finetune-ssl`
 
-bash run.sh
+`bash INSTALL.sh`
+
+change `INPUT_WAV_DIR` in `00_run.sh` https://github.com/Belinsohhh/Voice_Attribute_Edit/blob/main/eval/mos/resample_norm/00_run.sh#L15
+
+`bash 00_run.sh`
+
