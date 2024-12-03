@@ -1,6 +1,6 @@
 #!/bin/bash
 
-input_folder="/root/slue-toolkit/data/slue-voxpopuli/test"
+input_folder="/home/xiaoxiao/Voice_Attribute_Edit/data/slue-voxpopuli/dev"
 output_folder="ori_wav16k16bit"
 
 # Create the output folder if it doesn't exist

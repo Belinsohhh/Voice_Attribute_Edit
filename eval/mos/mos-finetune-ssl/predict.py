@@ -59,6 +59,7 @@ def main():
     validlist = os.path.join(datadir, 'sets/val_mos_list.txt')
 
     print('Loading data')
+    print(wavdir,validlist)
     validset = MyDataset(wavdir, validlist)
     validloader = DataLoader(validset, batch_size=1, shuffle=True, num_workers=2, collate_fn=validset.collate_fn)
 

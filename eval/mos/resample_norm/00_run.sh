@@ -11,10 +11,10 @@
 
 
 # Directory of input waveforms
-flag=libri_dev_enrolls
-INPUT_WAV_DIR=/home/smg2/share/past-projects/VoicePrivacy2020/evaluation/results/B1/anonymized_wav_b1/$flag
+flag=
+INPUT_WAV_DIR=/home/xiaoxiao/Voice_Attribute_Edit/eval/asr/ori_wav16k16bit/$flag
 
-OUTPUT_DIR=./wav_norm/B1_$flag
+OUTPUT_DIR=./wav_norm/$flag
 # Directory to store the processed waveforms
 OUTPUT_WAV_DIR=${OUTPUT_DIR}/wav
 # Sampling rate to be used
@@ -26,7 +26,7 @@ find ${INPUT_WAV_DIR} -name "*.wav" -type f -o -type l > __tmp_file.lst
 
 #resample-norm
 
-cat __tmp_file.lst | parallel -j 5  sh sub_16khz16bit.sh {} ${OUTPUT_WAV_DIR}/{/} ${SAMP}
+#cat __tmp_file.lst | parallel -j 5  sh sub_16khz16bit.sh {} ${OUTPUT_WAV_DIR}/{/} ${SAMP}
 cat __tmp_file.lst | parallel -j 5 bash sub_sv56.sh ${OUTPUT_WAV_DIR}/{/} ${OUTPUT_WAV_DIR}/{/}
 
 #create sets for MOS

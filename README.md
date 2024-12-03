@@ -51,3 +51,7 @@ This package is meant for using GPT to replace NER words according to instructio
 E.g. Enter parquet file name: test-00000-of-00001.parquet
 
 Output is saved in ner_output.json.
+
+
+
+data can download from https://github.com/asappresearch/slue-toolkit/blob/main/scripts/download_datasets.sh#L13

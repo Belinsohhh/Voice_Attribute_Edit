@@ -1,19 +1,19 @@
  -------------------------------------------------------
-  Input file: ................... ./wav_norm/B1_libri_dev_enrolls/wav/2428-83699-0040.wav.raw, 16 bits, fs=16000 Hz
+  Input file: ................... ./wav_norm//wav/20160526-0900-PLENARY-3-en_20160526-10:18:50_13.wav.raw, 16 bits, fs=16000 Hz
   Block Length: .................     256 [samples]
   Starting Block: ...............       1 []
-  Number of Blocks: .............     486 []
+  Number of Blocks: .............     802 []
   dBov desired for output: ...... -26.000 [dBov]
-  Norm factor desired is: .......   1.638 [times]
-  Max norm WITHOUT saturation: .. -18.468 [dBov]
+  Norm factor desired is: .......   2.338 [times]
+  Max norm WITHOUT saturation: .. -20.550 [dBov]
  -------------------------------------------------------
-  DC level: .....................      17 [PCM]
-  Maximum positive value: .......    7293 [PCM]
-  Maximum negative value: .......   -8407 [PCM]
+  DC level: .....................       0 [PCM]
+  Maximum positive value: .......    7482 [PCM]
+  Maximum negative value: .......   -5210 [PCM]
  -------------------------------------------------------
-  Long term energy (rms): ....... -31.005 [dBov]
-  Active speech level: .......... -30.284 [dBov]
-  RMS peak-factor found: ........  19.188 [dB]
-  Active peak factor found: .....  18.468 [dB]
-  Activity factor: ..............  84.707 [%]
+  Long term energy (rms): ....... -33.678 [dBov]
+  Active speech level: .......... -33.378 [dBov]
+  RMS peak-factor found: ........  20.850 [dB]
+  Active peak factor found: .....  20.550 [dB]
+  Activity factor: ..............  93.326 [%]
  -------------------------------------------------------

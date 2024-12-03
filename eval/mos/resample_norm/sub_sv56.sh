@@ -2,7 +2,8 @@
 # --- use sv56 to normalize waveform amplitude
 # Before use, please specify SOX and SV56
 # Usage: sh sub_sv56.sh input_wav output_wav
-export PATH=$PATH:/home/smg/miao/data/LibriSpeech/G722/bin
+export PATH=$PWD/STL-2009/src/sv56:$PATH
+
 # level of normalization
 LEV=26
 
