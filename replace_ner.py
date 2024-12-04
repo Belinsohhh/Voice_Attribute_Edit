@@ -5,15 +5,15 @@ import tiktoken
 
 encoding = tiktoken.encoding_for_model("gpt-4o-mini")
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="Insert OpenAI key")
 GPT_MODEL = "gpt-4o-mini"
 
-data = pd.read_parquet('voxpopuli/voxpopuli/test-00000-of-00001.parquet', engine='pyarrow')
+data = pd.read_parquet('slue/voxpopuli/test-00000-of-00001.parquet', engine='pyarrow')
 
 normalized_text = data["normalized_text"]
 normalized_combined_ner = data["normalized_combined_ner"]
 
-data_2 = pd.read_parquet('voxpopuli/voxpopuli/train-00000-of-00001.parquet', engine='pyarrow')
+data_2 = pd.read_parquet('slue/voxpopuli//train-00000-of-00001.parquet', engine='pyarrow')
 normalized_text_2 = data_2["normalized_text"]
 normalized_combined_ner_2 = data_2["normalized_combined_ner"]
 
@@ -22,6 +22,7 @@ for i in normalized_text_2:
 
 for i in normalized_combined_ner_2:
     normalized_combined_ner.append(i)
+
 
 function_metrics_gpt = [
 {
@@ -63,6 +64,13 @@ function_metrics_gpt = [
     }
 }]
 
+"""
+replace_ner_gpt
+Input: Query(str), Model(str) - preset as gpt-4o mini
+Function: calls the gpt-4o mini model and provides user prompt (sentence to replace and ner instructions), system prompt (), PresentNERReplacement function to standardise JSON output. The model will then generate the sentence that has the instructed ner replaced with dissimilar words.
+Output: JSON output that contains Original Sentence, NER Instructions, Replaced Sentence.
+"""
+
 def replace_ner_gpt(query: str, model: str = GPT_MODEL,) -> str:
     messages = [
         {"role": "system", "content": '''You are a Named Entity Recognition (NER) expert. If an NER instruction is given, you will replace the sensitive NER words in each of the sentences provided by user with a completely dissimilar replacement based on the ner instructions given. Output the original sentence, ner instructions and the replaced sentence in json format exactly like the following examples in delimitered by XML tags:
@@ -91,9 +99,7 @@ def replace_ner_gpt(query: str, model: str = GPT_MODEL,) -> str:
         Derive the answer step by step:
         1. Obtain the sentence from user
         2. Replace each word in the original sentence, as specified by the users NER instructions, with a dissimilar word. 
-        3. Input original sentence, NER instructions and replaced sentence into the json format required. 
-
-        Take a deep breath and think carefully, then only reply with the final json format without the intermediate steps.'''},
+        3. Input original sentence, NER instructions and replaced sentence into the json format required. '''},
         {"role": "user", "content": query},
     ]
 
@@ -143,5 +149,5 @@ for idx, each_text in enumerate(normalized_text):
                     "Replaced Sentence": each_text}
         replaced_output_v2.append(no_replace)
 
-with open('test.json', 'w') as f:
+with open('ner_output.json', 'w') as f:
     json.dump(replaced_output_v2, f, indent=4)

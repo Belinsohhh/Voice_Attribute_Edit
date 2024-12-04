@@ -1,8 +1,3 @@
-# !pip install torch
-# !pip install git+https://github.com/huggingface/parler-tts.git
-# !pip install transformers
-# !pip install soundfile
-
 import random
 import torch
 from parler_tts import ParlerTTSForConditionalGeneration
@@ -69,6 +64,13 @@ data = my_file.read()
 data = data.replace('â€‹', '')
 recording = data.split("\n") 
 my_file.close() 
+
+"""
+generate_random_env(channel, distance, recording)
+Input: channel, distance, recording
+Function: Due to many possible combinations of random additional attributes, this function randomly creates a combination for use on speaker description
+Output: A complete sentence describing the channel, distance and recording conditions, or none if not selected.
+"""
 
 def generate_random_env(channel, distance, recording):
     if channel!="" and distance !="" and recording !="":
