@@ -6,10 +6,10 @@ stage=1
 if [ "$stage" -le 1 ]; then
     dir="ori_wav16k16bit"
     outname="ori_predict.txt"
-
+    outputfile="key.txt"
     # Generate a list of WAV files
     find "$dir" -name "*.wav" -type f > wav.lst
-
+    cat wav.lst
     # Run prediction
     python eval/asr/main.py wav.lst "$outname"
 
@@ -19,14 +19,14 @@ if [ "$stage" -le 1 ]; then
     output_file="ori_key.txt"
 
     # Process the JSON file to extract id and Original Sentence
-    python Eval/asr/transform_ori_key.py 
+    python eval/asr/transform_ori_key.py 
 
     echo "Data has been saved to $output_file"
 
     # Compute WER for original audio
-    python Eval/asr/compute_wer.py --mode present "$output_file" "$outname"
+    python eval/asr/compute_wer.py --mode present "$output_file" "$outname"
 fi
-
+exit 0
 # Stage 2: Predict generated audio
 if [ "$stage" -le 2 ]; then
     dir="Specific_Speaker" #replace with Random_Speaker to get Random Speaker Predictions
@@ -36,7 +36,7 @@ if [ "$stage" -le 2 ]; then
     find "$dir" -name "*.wav" -type f > wav.lst
 
     # Run prediction
-    python Eval/asr/main.py wav.lst "$outname"
+    python eval/asr/main.py wav.lst "$outname"
 
     # Create or clear the output file
     output_file="key.txt"
@@ -53,6 +53,6 @@ if [ "$stage" -le 2 ]; then
     done
 
     # Compute WER for generated audio
-    python Eval/asr/compute_wer.py --mode present "$output_file" "$outname"
+    python eval/asr/compute_wer.py --mode present "$output_file" "$outname"
 fi
 
