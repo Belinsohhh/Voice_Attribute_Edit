@@ -225,7 +225,7 @@ pos = np.load('%s/pos.npy'%out)
 neg = np.load('%s/neg.npy'%out)
 oa = np.load('%s/oa.npy'%out)
 
-eer, threshold = compute_eer(oa, neg)
+eer, threshold = compute_eer(pos, neg)
 print(f"{eer*100}%")
 
 far = compute_far(oa, threshold)
