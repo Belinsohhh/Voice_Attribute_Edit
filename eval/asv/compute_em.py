@@ -19,6 +19,9 @@ def extract_vector(audio):
 
 def extract_vector_pair(audio):
         signal, fs =torchaudio.load(audio)
+        if sampling_rate != 16000:
+                import resampy
+                audio = resampy.resample(audio, sampling_rate, 16000)
         length = signal.shape[-1]
         signal1 = signal[:, :int(length/2)]
         signal2 = signal[:, int(length/2):]
